@@ -21,7 +21,7 @@ Note that there are difference in nomenclature within the literature for MIPS an
 
 We have classified these instructions as:
 
-  1. Data Processing: Move, Logical, Arithmetic, and Shifts
+  1. Data Processing: Move, Comparison, Bitwise, Arithmetic, and Shifts
     * MIPS Syntax: 
       - {mnemonic} $rd, $rs, $rt          # Logical, Arithmetic, and Shifts
     * ARM Syntax: 
@@ -114,9 +114,24 @@ Within each row, a set of characters is used to denote the type of value encoded
 |-------|------|---------|-------|-------|-------|-------|--------|
 | MIPS  | R    | oo oooo | sssss | ttttt | ddddd | aaaaa | ffffff |
 
-| ISA   | TYPE | op      | rs    | rt    | imm  |
+| ISA   | TYPE | op      | rs    | rt    | imm          |
 |-------|------|---------|-------|-------|--------------|
 | MIPS  | I    | 00 0000 | sssss | ttttt | iiii iiii iiii iiii |
+
+| ISA   | TYPE | op      |  address                          |
+|-------|------|---------|-----------------------------------|
+| MIPS  | J    | 00 0000 | ii iiii iiii  iiii iiii iiii iiii |
+
+
+| ISA  | TYPE | Cond | --- | L | Offset | 
+|------|------|------|-----|---|------------------------------------|
+| ARM  | B/L  | 1110 | 101 | 0 | iiii iiii iiii iiii iiii iiii iiii |
+
+j
+jal
+b
+bal
+
 
 
 C/R:  Comparison with Registers
@@ -169,13 +184,12 @@ S/I: shift with immediate
 |------------------------|-----------------|---------------|-----------------|
 | Move                   | rd = rt         | move $rd, $rt | MOV rd, rt      |
 | Load Immediate         | rd = imm        | li $rd, imm   | MOV rd, #imm    |
+| Load Upper Immediate   | rd = imm << 16  | lui $rd, imm  | _none_          |
 |------------------------|-----------------|---------------|-----------------|
 | Move Negative          | rd = ~ rt       | _none_        | MVN rd, rt      |
 | Move Negative w/imm    | rd = ~ imm      | _none_        | MVN rd, #imm    |
 |------------------------|-----------------|---------------|-----------------|
-| Load Address           | rd = &A         | la $rd, addr  | LDR  RD, =label |
-| Load Immediate         | rd = imm        | li $rd, imm   | _none_          |
-| Load Upper Immediate   | rd = imm << 16  | lui $rd, imm  | _none_          |
+| Load Address           | rd = &label     | la $rd,label  | LDR rd, =label  |
 |------------------------|-----------------|---------------|-----------------|
 | Move from hi register  | rd = hi         | mfhi $rd      | _none_          |
 | Move to hi register    | hi = rs         | mfhi $rs      | _none_          |
@@ -194,69 +208,31 @@ S/I: shift with immediate
 | mflo     | 00 0000 | 01 0010 | MIPS   | R      |
 | mtlo     | 00 0000 | 01 0011 | MIPS   | R      |
 | la       |         |         | MIPS   | pseudo | 
+| LDR      |         |         | ARM    | pseudo |
 | li       |         |         | MIPS   | pseudo |
 | lui      | 00 1111 |         | MIPS   | I      | 
 
 
 | Pseudo Instruction  |  Equivalent                |
 |---------------------|----------------------------|
-| move $rd, $rt       |                            |
+| move $rd, $rt       | addu $rd, $zero, $rt       |
 |---------------------|----------------------------|
 | la rd, label        | lui $at upper(label)       |
 |                     | ori $rd, $at, lower(label) |
 |---------------------|----------------------------|
-| li rd, imm          | addiu $rd, $at, imm
+| li rd, imm          | addiu $rd, $at, imm        |
 |---------------------|----------------------------|
-| LDR  RD, =label     |  ...  |                    |
+| LDR  RD, =label     |  ...                       |
 |---------------------|----------------------------|
-| LSL rd, rt, rs      | MOV rd, rt, LSL rs |
-
-
-### Comparisons and Tests
-
-| Description            | Java                | MIPS                | ARM              |
-|------------------------|---------------------|---------------------|------------------|
-| Test Bits              | rs & rt             | and $0, $rs, $rt    | TST rs, rt       |
-| Test Bits w/imm        | rs & imm            | andi $0, $rt, imm   | TST rs, #imm     |
-|------------------------|---------------------|---------------------|------------------|
-| Test Equality          | rs ^ rt             | xor $0, $rs, $rt    | TEQ rd, rs, rt   |
-| Test Equality w/imm    | rs ^ imm            | xori $0, $rs, imm   | TEQ rd, rs, #imm |
-|------------------------|---------------------|---------------------|------------------|
-| Compare Negative       | rs + rt             | addu $0, $rs, $rt   | CMN rs, rt       |
-| Compare Negative w/imm | rs + imm            | addiu $0, $rs, imm  | CMN rs, rt       |
-|------------------------|---------------------|---------------------|------------------|
-| Compare                | rs - rt             | subu $rd, $rs, $rt  | CMP rs, rt       |
-| Compare w/imm          | rs - imm            | subu $rd, $rs, -imm | CMP rs, rt       |
-|------------------------|---------------------|---------------------|------------------|
-
-
-| MNEMONIC | op      |func     | ISA  | FORMAT |
-|----------|--------:|--------:|------|--------|
-| TST      |    1000 |         | ARM  | C/x    | 
-| TEQ      |    1001 |         | ARM  | C/x    | 
-| CMP      |    1010 |         | ARM  | C/x    | 
-| CMN      |    1011 |         | ARM  | C/x    | 
-| and      | 00 0000 | 10 0100 | MIPS | R      |
-| andi     | 00 1100 | 00 0000 | MIPS | I      | 
-| addu     | 00 0000 | 10 0001 | MIPS | R      |
-| addiu    | 10 0001 | 00 0000 | MIPS | I      |
-| subu     | 00 0000 | 10 0011 | MIPS | R      |
-| andi     | 00 1000 | 00 0000 | MIPS | I      |
-| xori     | 00 1101 | 00 0000 | MIPS | I      |
-| xor      | 00 0000 | 10 0110 | MIPS | R      |
-
-
-stl
-stli
 
 
 
-### Logical Operations (C bit is based upon results of barrel shifter)
+### Bitwise Operations (C bit is based upon results of barrel shifter)
 
 | Description        | Java                | MIPS               | ARM              |
 |--------------------|---------------------|--------------------|------------------|
-| Negation           | rd = ~ rs           | nor $rd, $rs, $0   | MVN rd, rs       |
-| Negation w/imm     | rd = ~ imm          | _none_             | MVN rd, #imm     |
+| Complement         | rd = ~ rs           | not $rd, $rs       | MVN rd, rs       |
+| Complement w/imm   | rd = ~ imm          | _none_             | MVN rd, #imm     |
 |--------------------|---------------------|--------------------|------------------|
 | And                | rd = rs & rt        | and $rd, $rs, $rt  | AND rd, rs, rt   |
 | And w/imm          | rd = rs & imm       | andi $rd, $rt, imm | AND rd, rt, #imm |
@@ -272,6 +248,11 @@ stli
 |--------------------|---------------------|--------------------|------------------|
 | Bit Clear          | rd = rs & ( ~ rt )  | _none_             | BIC rd, rs, rt   |
 | Bit Clear w/imm    | rd = rs & ( ~ imm ) | _none_             | BIC rd, rs, #imm |
+|--------------------|---------------------|--------------------|------------------|
+| Count leading 0's  |                     | clz $rd, $rs       | _none_           |
+| Count leading 1's  |                     | clo $rd, $rs       | _none_           |
+|--------------------|---------------------|--------------------|------------------|
+
 
 
 
@@ -289,10 +270,16 @@ stli
 | xor      | 00 0000 | 10 0110 | MIPS | R      |
 | xori     | 00 1101 | 00 0000 | MIPS | I      |
 | nor      | 00 0000 | 10 0111 | MIPS | R      |
+| not      |         |         | MIPS | psuedo |
 | MVN      | 1111    |         | ARM  | D/x    |
 | BIC      | 1110    |         | ARM  | D/x    |
+| clz      | 01 1100 | 01 1010 | MIPS | R      |
+| clz      | 01 1100 | 01 1011 | MIPS | R      |
 
 
+| Pseudo Instruction  | Equivalent                 |
+|---------------------|----------------------------|
+| not $rd, $rs          | nor $rd, $rs, $zero        |
 
 
 ### Arithmetic Operations (PCSR is based upon ALU)
@@ -334,33 +321,40 @@ stli
 
 
 
-### Shift Operations
+### Shift and Rotate Operations
 
-| Description            | Java                | MIPS    | ARM        |
-|------------------------|---------------------|---------|------------|
-| Shift Left: Logical      | rd = rt << rs               | sllv $rt, $rt, $rs   | MOV rd, rt, LSL rs |
-| Shift Right: Logical     | rd = rt >> rs               | srlv $rd, $rt, $rs   | MOV rd, rt, RSL rs |
-| Shift Left: Arithmetic   | rd = rt >>> rs              | srav $rd, $rt, $rs   | MOV rd, rt, ASL rs |
-| Rotate Right             | rd = rt << imm | rt >> imm  | _none_               | MOV rd, rt, ROR rs |
+| Description                  | Java                        | MIPS               | ARM              |
+|------------------------------|-----------------------------|--------------------|------------------|
+| Shift Left: Arithmetic       | rd = rt >>> rs              | srav $rd, $rt, $rs | ASL rd, rt, rs   |
+| Shift Left: Arithmetic w/imm | rd = rt >>> imm             | sra $rd, $rt, imm  | ASL rd, rt, #imm |
+|------------------------------|-----------------------------|--------------------|------------------|
+| Shift Left: Logical          | rd = rt << rs               | sllv $rt, $rt, $rs | LSL rd, rt, rs   |
+| Shift Left: Logical w/imm    | rd = rt << imm              | sll $rd, $rt, imm  | LSL rd, rt, #imm |
+|------------------------------|-----------------------------|--------------------|------------------|
+| Shift Right: Logical         | rd = rt >> rs               | srlv $rd, $rt, $rs | RSL rd, rt, rs   |
+| Shift Right: Logical w/imm   | rd = rt >> imm              | srl $rd, $rt, imm  | RSL rd, rt, #imm |
+|------------------------------|-----------------------------|--------------------|------------------|
+| Shift Left: Arithmetic       | rd = rt >>> rs              | srav $rd, $rt, $rs | ASL rd, rt, rs   |
+| Shift Left: Arithmetic w/imm | rd = rt >>> imm             | sra $rd, $rt, imm  | ASL rd, rt, #imm |
+|------------------------------|-----------------------------|--------------------|------------------|
+| Rotate Left                  | rd = rt << rs | rt >> rs    | rol $rd, $rs, $rt  | _none_           |
+| Rotate Left w/imm            | rd = rt << imm | rt >> imm  | ror $rd, $rs, imm  | _none_           |
+|------------------------------|-----------------------------|--------------------|------------------|
+| Rotate Right                 | rd = rt << rs | rt >> rs    | ror $rd, $rs, $rt  | ROR rd, rt, rs   |
+| Rotate Right w/imm           | rd = rt << imm | rt >> imm  | ror $rd, $rs, imm  | ROR rd, rt, #imm |
+|------------------------------|-----------------------------|--------------------|------------------|
+| Rotate Right Extended w/imm  | rd = C << 31 + rt >>1       | _none_             | RXR rd, rt       |
 
-| Description            | Java                | MIPS    | ARM        |
-|------------------------|---------------------|---------|------------|
-| Shift Left: Logical    | rd = rt << imm             | sll $rd, $rt, imm | MOV rd, rt, LSL #imm |
-| Shift Right: Logical   | rd = rt >> imm             | srl $rd, $rt, imm | MOV rd, rt, RSL #imm |
-| Shift Left: Arithmetic | rd = rt >>> imm            | sra $rd, $rt, imm | MOV rd, rt, ASL #imm |
-| Rotate Right           | rd = rt << imm | rt >> imm | _none_            | MOV rd, rt, ROR #imm |
-| Rotate Right Extended  | rd = C << 31 + rt >>1      | _none_            | MOV rd, rt, RXR      |
 
 | MNEMONIC | op      |func     | ISA  | FORMAT |
 |----------|--------:|--------:|------|--------|
-| LSL      |    1101 |   00      | ARM  | S/x    |
-| RSL      |    1101 |   01      | ARM  | S/x    |
-| ASL      |    1101 |   10      | ARM  | S/x    |
-| ROR      |    1101 |   11      | ARM  | S/x    |
-| RXX      |    1101 |   11      | ARM  | S/I    |
-
-For rXX, immedate vauls is set to be 0
-
+| LSL      |    1101 |   00    | ARM  | psuedo |
+| RSL      |    1101 |   01    | ARM  | psuedo |
+| ASL      |    1101 |   10    | ARM  | psuedo |
+| ROR      |    1101 |   11    | ARM  | psuedo |
+| RXX      |    1101 |   11    | ARM  | psuedo |
+| rol      |         |         | MIPS | psuedo |
+| ror      |         |         | MIPS | psuedo |
 | sll      | 00 0000 | 00 0000 | MIPS | R      |
 | srl      | 00 0000 | 00 0010 | MIPS | R      | 
 | sra      | 00 0000 | 00 0011 | MIPS | R      | 
@@ -369,10 +363,32 @@ For rXX, immedate vauls is set to be 0
 | srav     | 00 0000 | 00 0111 | MIPS | R      | 
 
 
-
-
-#### Psuedo Instructions
-The MIPS instruction set does not include a native move instruction.  It does, however provide a pseudo instruction.  This instruction is equivalent to ``addu $rd, $zero, $rt``
+| Pseudo Instruction  | Equivalent                 |
+|---------------------|----------------------------|
+| ASL rd, rt, op2     | MOV rd, rt, ASL op2        |
+| LSL rd, rt, op2     | MOV rd, rt, LSL op2        |
+| RSL rd, rt, op2     | MOV rd, rt, RSL op2        |
+|---------------------|----------------------------|
+| rol $rd, $rs, $rt   | subu $at, $0, $rt          |
+|                     | srlv $ar, $rs, $at         |
+|                     | sllv $rd, $rs, $3          |
+|                     | or  $rd, $rd, $at          |
+|---------------------|----------------------------|
+| rol $rd, $rs, imm   | srl  $at, $rs, 32-imm      |
+|                     | sll  $rd, $rs, imm         |
+|                     | or   $rd, $rd, $at         |
+|---------------------|----------------------------| 
+| ror $rd, $rs, $rt   | subu $at, $0, $rt          |
+|                     | sllv $ar, $rs, $at         |
+|                     | srlv $rd, $rs, $3          |
+|                     | or  $rd, $rd, $at          |
+|---------------------|----------------------------|
+| ror $rd, $rs, imm   | sll  $at, $rs, 32-imm      |
+|                     | srl  $rd, $rs, imm         |
+|                     | or   $rd, $rd, $at         |
+|---------------------|----------------------------|
+| ROR rd, rt, op2     | MOV rd, rt, ROR op2        |
+| RXR rd, rt          | MOV rd, rt, ROR #0         |
 
 
 
@@ -454,9 +470,6 @@ multu        0x19
 div rs, rt  0x1a R
 divu rs, rt 0x19  R
 
-
-
-
 madd rs, rt 0x1c 0x0
 maddu rs, rt 0x1c 0x1
 msub 0x4
@@ -465,14 +478,297 @@ msubu 0x5
 
 
 
-## Control Flow: Branch and Jumps
 
-  1. Multiple and Multiply Long
-  1. Control Flow: Branch and Jumps
-    * MIPS Syntax: 
-      - MNEMONIC $rs, $rt, imm 
-      - MNEMONIC addr
-    * ARM Syntax: B{L}{cond}
+## Control Flow
+
+
+| ISA   | TYPE | op      |  address                          |
+|-------|------|---------|-----------------------------------|
+| MIPS  | J    | 00 0000 | ii iiii iiii  iiii iiii iiii iiii |
+
+
+| ISA  | TYPE | Cond | --- | L | Offset | 
+|------|------|------|-----|---|------------------------------------|
+| ARM  | B/L  | 1110 | 101 | 0 | iiii iiii iiii iiii iiii iiii iiii |
+
+
+
+### Unconditional Control Flow
+
+| Description                     | Java                | MIPS            | ARM        |
+|---------------------------------|---------------------|-----------------|------------|
+| Unconditional Goto              | goto label          | j addr          | b addr     |
+| Unconditional Goto              | goto label          | b offset        | b addr      |
+| Unconditional Goto via Variable | _none_              | jr $rd          | bx rd      |
+|---------------------------------|---------------------|-----------------|------------|
+| Subroutine Call via Variable    | _none_              | jalr label      | ???           |
+| Subroutine Call                 | A()                 | jal &A addr     | bl addr    |
+| Subroutine Call                 | A()                 | bal &A offset   | bl label   |
+|---------------------------------|---------------------|-----------------|------------|
+
+### Conditional ~Control Flow~ Execution
+
+On most processes, a set of conditional control-flow instructions are provided. These instructions perform 
+
+
+to alter the current flow.  Such instructions forms some type of Bitwise or Arthimetic operation and based upon the results, a goto is performed.  This is the case w  For example,
+
+    ```mips
+    if ( A )
+    ```
+
+
+This is the case with the MIPS processor.  For the 
+
+
+Traditionally, all instructions are executed based upon control flow.  A conditional control flow instruction can be performed to alter the current flow of a program.  E.g., 
+
+   ```java
+        if (A >= B) goto C;
+   C:     max = A;  
+          goto fi;   
+   A:   // else
+          max = B;
+          goto fi
+   fi:  
+   ```
+
+
+
+The ARM process, however, 
+
+
+### Comparisons and Tests  
+C: carry
+N: negative
+Z: zero
+O: 
+
+| Description            | Java                | MIPS                | ARM              |
+|------------------------|---------------------|---------------------|------------------|
+| Test Bits              | Z = ! (rs & rt)     | and $0, $rs, $rt    | TST rs, rt       |
+| Test Bits w/imm        | Z = ! (rs & imm)    | andi $0, $rt, imm   | TST rs, #imm     |
+|------------------------|---------------------|---------------------|------------------|
+| Test Equality          | Z = !(rs ^ rt)      | xor $0, $rs, $rt    | TEQ rs, rt       |
+| Test Equality w/imm    | Z = !(rs ^ imm)     | xori $0, $rs, imm   | TEQ rs, #imm     |
+|------------------------|---------------------|---------------------|------------------|
+| Compare Negative       | Z = !(rs + rt)      | addu $0, $rs, $rt   | CMN rs, rt       |
+| Compare Negative w/imm | Z = !(rs + imm)     | addiu $0, $rs, imm  | CMN rs, #imm     |
+|------------------------|---------------------|---------------------|------------------|
+| Compare                | Z = !(rs - rt)      | subu $rd, $rs, $rt  | CMP rs, rt       |
+| Compare w/imm          | Z = !(rs - imm)     | _none_              | CMP rs, #imm     |
+|------------------------|---------------------|---------------------|------------------|
+
+
+| MNEMONIC | op      |func     | ISA  | FORMAT |
+|----------|--------:|--------:|------|--------|
+| TST      |    1000 |         | ARM  | C/x    | 
+| TEQ      |    1001 |         | ARM  | C/x    | 
+| CMP      |    1010 |         | ARM  | C/x    | 
+| CMN      |    1011 |         | ARM  | C/x    | 
+| and      | 00 0000 | 10 0100 | MIPS | R      |
+| andi     | 00 1100 | 00 0000 | MIPS | I      | 
+| addu     | 00 0000 | 10 0001 | MIPS | R      |
+| addiu    | 10 0001 | 00 0000 | MIPS | I      |
+| subu     | 00 0000 | 10 0011 | MIPS | R      |
+| andi     | 00 1000 | 00 0000 | MIPS | I      |
+| xori     | 00 1101 | 00 0000 | MIPS | I      |
+| xor      | 00 0000 | 10 0110 | MIPS | R      |
+
+
+Set Less than: stl
+Set Less than unsigned: stlu   
+Set Less than immediate stli
+Set Less than immediate unsigned stli
+
+| Pseudo Instruction  | Equivalent                 |
+|---------------------|----------------------------|
+| 
+slt rd = (rs == rt)? 1 : 0
+stlu rd = (rs == rt)? 1 : 0
+stli rd = (rs == imm)? 1 : 0
+stliu rd = (rs == imm)? 1 : 0
+
+seq  rd = (rs == op2)? 1 : 0
+sge  rd = (rs >= op2)? 1 : 0 
+sgeu rd = (rs >= op2)? 1 : 0
+sgt  rd = (rs > op2)? 1 : 0
+sgtu rd = (rs > op2)? 1 : 0
+sneq rd = (rs != op2)? 1 : 0
+
+
+
+
+### Comparison Based Control Flow
+
+| Description                     | Java                | MIPS            | ARM        |
+|---------------------------------|---------------------|-----------------|------------|
+| Goto if rs == rt  |              | beq  $rs, $rt, label    |
+| Goto if rs > rt   |              | bgt  $rs, $rt, label    |
+| Goto if rs >= rt  |              | bge  $rs, $rt, label    |
+| Goto if rs <= rt  |              | ble  $rs, $rt, label    |
+| Goto if rs < rt   |              | blt  $rs, $rt, label    |
+| Goto if rs != rt  |              | bne  $rs, $rt, label    |
+| Goto if rs == 0   |              | beqz $rs, label         |
+| Goto if rs > 0    |              | bgtz $rs, label         |
+| Goto if rs >= 0   |              | bgez $rs, label         |
+| Goto if rs <= 0   |              | blez $rs, label         |
+| Goto if rs < 0    |              | bltz $rs, label         |
+| Goto if rs != 0   |              | bne  $rs, label         |
+
+| Subroutine Call if rs == rt  |   | beqal  $rs, $rt, label  |
+| Subroutine Call if rs > rt   |   | bgtal  $rs, $rt, label  |
+| Subroutine Call if rs >= rt  |   | bgeal  $rs, $rt, label  |
+| Subroutine Call if rs <= rt  |   | bleal  $rs, $rt, label  |
+| Subroutine Call if rs < rt   |   | bltal  $rs, $rt, label  |
+| Subroutine Call if rs != rt  |   | bneal  $rs, $rt, label  |
+| Subroutine Call if rs == 0   |   | beqzal $rs, label       |
+| Subroutine Call if rs > 0    |   | bgtzal $rs, label       |
+| Subroutine Call if rs >= 0   |   | bgezal $rs, label       |
+| Subroutine Call if rs <= 0   |   | blezal $rs, label       |
+| Subroutine Call if rs < 0    |   | bltzal $rs, label       |
+| Subroutine Call if rs != 0   |   | bneal  $rs, label       |
+
+
+### Conditional Instruction Execution 
+
+On the ARM process, all instructions can be executed conditional. 
+
+
+two instructions are required to perform a conditional goto.  The first command sets the values associated with the CSPR.  The next command A "branch" command is then used to 
+
+or..
+
+
+Conditional Execution...
+
+
+
+These values are then check, and if set appropriately, a goto is 
+
+with the CSPR.  The particular values are:
+   * The C flag that indicates a carry 
+   * the V flag that indicates an overflow occurs
+   * the N flag that indicates the resulting value is n
+Based upon the status of a previous operation 
+
+|---------------------------------|---------------------|-----------------|------------|
+| Branch if EQual |  _none_  | B.EQ addr 
+| Branch if Not Equal |  _none_  | B.NE addr 
+| Branch if Carry Set |  _none_  | B.CS addr 
+| Branch if Carry Clear |  _none_  | B.CC addr 
+| Branch if MInus |  _none_  | B.MI addr 
+| Branch if PLus |  _none_  | B.PL addr 
+| Branch if oVerFlow Set |  _none_  | B.VS addr 
+| Branch if overFlow Set |  _none_  | B.VC addr 
+| Branch if HIgher |  _none_  | B.HI addr 
+| Branch if LesS |  _none_  | B.LS addr 
+| Branch if GE |  _none_  | B.GE addr 
+| Branch if Less T |  _none_  | B.LT addr 
+| Branch if Greater Than |  _none_  | B.GT addr 
+| Branch if Less than or Equal |  _none_  | B.LE addr 
+| Branch ALways |  _none_  | B.AL addr 
+ 
+
+| BEQ
+|         |        |               | B.EQ addr |
+|         |        |               | B.NE addr |
+|         |        |               | B.CS addr |
+|         |        |               | B.CC addr |
+|         |        |               | B.MI addr |
+|         |        |               | B.PL addr |
+|         |        |               | B.VS addr |
+|         |        |               | B.VC addr |
+|         |        |               | B.HI addr |
+|         |        |               | B.LS addr |
+|         |        |               | B.GE addr |
+|         |        |               | B.LT addr |
+|         |        |               | B.GT addr |
+|         |        |               | B.LE addr |
+|         |        |               | B.AL addr |
+
+|---------------|
+
+
+
+bltz   00 0000  RI
+bgez   00 0001  RI
+bltzal 01 0000 
+bgezal 01 0001
+
+
+beq  $rs, $rt, offset
+bgez $rs, $rt, offset
+
+
+bgtz   rd >
+blez   rd <=
+bltz   rd < 0
+bltzal rd < 0
+bne    rd != rt
+
+CMP rs, rt
+BEQ
+
+
+
+B{L}.EQ | 0000 | 1 if L | ARM  | 
+B{L}.NE | 0001 | 1 if L | ARM  | 
+B{L}.CS | 0010 | 1 if L | ARM  | 
+B{L}.CC | 0011 | 1 if L | ARM  | 
+B{L}.MI | 0100 | 1 if L | ARM  | 
+B{L}.PL | 0101 | 1 if L | ARM  | 
+B{L}.VS | 0110 | 1 if L | ARM  | 
+B{L}.VC | 0111 | 1 if L | ARM  | 
+B{L}.HI | 1000 | 1 if L | ARM  | 
+B{L}.LS | 1001 | 1 if L | ARM  | 
+B{L}.GE | 1010 | 1 if L | ARM  | 
+B{L}.LT | 1011 | 1 if L | ARM  | 
+B{L}.GT | 1100 | 1 if L | ARM  | 
+B{L}.LE | 1101 | 1 if L | ARM  | 
+B{L}.AL | 1110 | 1 if L | ARM  | 
+
+b label  psuedo   beq $zero $zero offset
+bal label BGEZAL $zero, offset
+
+ Description                    | Java                | MIPS            | ARM        |
+|-------------------------------|---------------------|-----------------|------------|
+| Goto                          | goto addr         |    | |
+| Register Goto ir      | goto rd           |  J
+| Jump and Link     | _       | |  |
+| Branch 
+| Branch and Link
+| Branch if equal
+| Conditional Branch
+
+
+| Branch if EQ | 0000 | 1 if L | ARM  | 
+| Branch if NE | 0001 | 1 if L | ARM  | 
+| Branch if CS | 0010 | 1 if L | ARM  | 
+| Branch if CC | 0011 | 1 if L | ARM  | 
+| Branch if MI | 0100 | 1 if L | ARM  | 
+| Branch if PL | 0101 | 1 if L | ARM  | 
+| Branch if VS | 0110 | 1 if L | ARM  | 
+| Branch if VC | 0111 | 1 if L | ARM  | 
+| Branch if HI | 1000 | 1 if L | ARM  | 
+| Branch if LS | 1001 | 1 if L | ARM  | 
+| Branch if GE | 1010 | 1 if L | ARM  | 
+| Branch if LT | 1011 | 1 if L | ARM  | 
+| Branch if GT | 1100 | 1 if L | ARM  | 
+| Branch if LE | 1101 | 1 if L | ARM  | 
+| Branch if AL | 1110 | 1 if L | ARM  | 
+ 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
