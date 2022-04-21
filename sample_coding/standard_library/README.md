@@ -1,12 +1,31 @@
 # Standard Library
 
-The C language defined a number of routines that have become the defacto standard for performing basic operations.
+An ISA defines the OS interface but it does not define a set of useful subroutines in which a programmer can use.  As such the assembly-level program is left to their own devices to develop such subroutines.
 
-In this directory, we provide the implementation of these libraries in the following languagues:
+Whereas, different programming languages either define these subroutines as part of the core language or there is a large number of _de facto_ standard libraries in which the programmer can use.
+
+Most of these standard libraries are based --in part-- upon the standard libraries that emerged from the C programming community. As such these libraries form a foundation for which all our programs are built upone.
+
+While other programming languages may provide the subroutines in a different manner, the underlying implementation of these subroutines *at the assembly level* are essentially the same.  For example, Java provides the "length()" method to determine the length associated with a string object, e.g., ``int len = x.length()``. This method is based upon the C library "strlen()" subroutine, e.g., ``int len = strlen(x)``
+
+Within the standard library for C, a number of routines are declared within the following header files:
+
+1. stdio.h:
+1. stdlib.h:
+1. string.h:
+
+In this directory, we provide the implementation of a subset of these subroutines in the following programming languages:
 
 1. The C programming language, i.e., a high-level assembly language
 1. The MIPS programming language
 1. The ARM programming language
+
+The purpose for these implementation include:
+
+1. to provide a comparison between MIPS and ARM assemble programs,
+1. to utilize the implementation as a teaching tool,
+1. to provide MIPS/ARM programmers with a set of useful subroutines to build upon.
+
 
 
 ---
@@ -27,29 +46,33 @@ long long atoll(const char *);
 
 ## \#include <string.h>
 
-The following memory related subroutines are define within "string.h"
+### Memory related subroutines:
 
 ```c
-// memchr -- set a byte in memory
-void    *memchr(const void *__s, int __c, size_t __n);
-// memset - locate a byte in memory
-void    *memset(void *__b, int __c, size_t __len);
-
 // memcpy, memccpy, memmove -- move bytes within memory
-void * memcpy(void *restrict dst, const void *restrict src, size_t n);
-void * memccpy(void *restrict dst, const void *restrict src, int c, size_t n);
-void * memmove(void *dst, const void *src, size_t len);
+byte * memcpy(byte *dst, byte * src, int length);
+byte * memccpy(byte *dst, byte *src, int last_char, int maxlen);
+byte * memmove(byte *dst, byte *src, int length);
+
+
+// memchr -- set a byte in memory
+byte * memchr(byte *src, byte c, int max_length);
+
+// memset - locate a byte in memory
+byte *memset(byte *dst, byte c, int length);
 
 // memcmp -- compare bytes in memory
-int      memcmp(const void *__s1, const void *__s2, size_t __n);
+int   memcmp(byt *src1, byte *src2, int length);
 ```
 
-The following string related subroutines are defined within "string.h"
+### String related subroutines:
 
 ```c
 //      strlen, strnlen – find length of string
-size_t strlen(const char *s);
-size_t strnlen(const char *s, size_t maxlen);
+size_t strlen(char *s);
+size_t strnlen(char *s, int maxlen);
+
+
 
 //     strcat, strncat – concatenate strings
 char * strcat(char *restrict s1, const char *restrict s2);
