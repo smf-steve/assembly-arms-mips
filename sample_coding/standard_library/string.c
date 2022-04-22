@@ -7,7 +7,7 @@ void * memcpy(char * dst, char *src, int length) {
 
   // Written via the pointer approach
   original_dst = dst;
-  for(c=0; c < length, c++) {
+  for(c=0; c < length; c++) {
     (* dst) = (* src);
     dst++, src++;
     c++;
@@ -15,7 +15,7 @@ void * memcpy(char * dst, char *src, int length) {
   return original_dst;
 
   // Written via the array approach
-  // for(c=0; c < length, c++) {
+  // for(c=0; c < length; c++) {
   //   dst[c] = src[c];
   //   if (src[c] == char_last) {
   //      ret_val = &dst + c;
@@ -28,15 +28,15 @@ void * memcpy(char * dst, char *src, int length) {
  }
 
 
-void * memccpy(char * dst, char *src, char char_last, int length) {
+void * memccpy(char * dst, char *src, char char_stop, int length) {
   // Note: NO checks are made for the NULL character
   //       This is "mem" copy and not "string" copy
 
-  // If the "char_last" is not within the string NULL is returned
-  // If the "char_last" is encountered during the operation
+  // If the "char_stop" is not within the string NULL is returned
+  // If the "char_stop" is encountered during the operation
   //   -- the character is copied into dst
   //   -- the copy operation then stops 
-  //   -- the address of the character after "char_last" is returned
+  //   -- the address of the character after "char_stop" is returned
   //
   // From the man page:
   //     * If the character c (as converted to an unsigned char) occurs 
@@ -48,9 +48,9 @@ void * memccpy(char * dst, char *src, char char_last, int length) {
   int ret_val = NULL;
 
   // Written via the pointer approach
-  for(c=0; c < length, c++) {
+  for(c=0; c < length; c++) {
     (* dst) = (* src);
-    if ( (* dst) == char_last) {
+    if ( (* dst) == char_stop) {
        ret_val = dst + 1
        return;
     }
@@ -60,9 +60,9 @@ void * memccpy(char * dst, char *src, char char_last, int length) {
   return ret_val;  
 
   // Written via the array approach
-  // for(c=0; c < length, c++) {
+  // for(c=0; c < length; c++) {
   //   dst[c] = src[c];
-  //   if (src[c] == char_last) {
+  //   if (src[c] == char_stop) {
   //      ret_val = &dst + c;
   //      break;
   //   }
@@ -109,3 +109,150 @@ void * memmove(byte * dst, byte *src, int length) {
   }
   return dst;
 }
+
+
+
+// memchr -- locate a byte in memory
+void * memchr(void *src, unsigned char value, int max_length) {
+
+  void * ret_val = NULL;
+
+  for(c=0; c < length;) {
+    if ( (* src) == value) {
+       ret_val = src;
+       break;
+    }
+    src++, 
+    c++;
+  }
+  return ret_val; 
+}
+
+
+// memset - fill a byte string with a byte value
+void *memset(void *dst, byte value, int length) {
+
+  void * ret_val = dst;
+
+  for(c=0; c < length; ) {
+    ( * dst ) = value;
+    dst++, 
+    c++;
+  }
+  return ret_val; 
+}
+
+
+
+
+// memcmp -- compare byte string
+int   memcmp(void *src1, void *src2, int length) {
+
+  int ret_val = 0;
+
+  // Special Cases:
+  // 1. both strings are are the same -- return 0;
+  // 2. only one string is empty -- return 1 or -1;
+  // 3. search for the first difference
+
+
+  if (src1 == src2)  return 0;   // both strings are the same
+  if (src1 == NULL ) return 1;
+  if (src2 == NULL ) return -1;
+
+  for(c=0; c < length; c++) {
+    if ( (*src1) != (*src))
+       break;
+    src1++; 
+    src2++;
+    c++;
+  }
+  return (* src1) - (* src2); 
+}
+
+
+int strlen(char * str) {
+   int count = 0;
+   while ( (*str) != '\0') {
+    str++;
+    count++;
+   }
+ return count;
+}
+
+int strnlen(char * str, int max_length) {
+  int count;
+
+  for (count=0; count < max_length; count++) {
+    if ((*str) == '\0')
+      break;
+    str++;
+  }
+  return count;
+}
+
+
+
+int   strlcpy(char *  dst,  char *  src, int size){
+  int count;
+
+  if (size == 0) return 0;
+
+  for (count=0; count < size - 1; count++) {
+    if ((*str) == '\0')
+      break;
+    (* dst) = (* str);
+    dst++;
+    src++;
+  }
+  (* dst) = '\0';
+  return count;
+}
+
+
+int  strlcat(char *  dst,  char *  src, int size) {
+
+  if (size == 0) return 0;
+
+  // first find the end of dst
+  for (count=0; count < size -1; count ++) {
+    if ((*dst) == '\0')
+      break;
+    dst ++;
+  }
+  if (dst == '\0') {
+    count += strlcpy(dst, src, size-count);
+    // bug:  count should be |dst| + |src|
+    // here: count is max (|dst| + |src|, size);
+  } 
+  return count;
+}
+
+
+//// Debugging code
+
+char A[20] = "Hello this is a string;"
+char B[20] = "Hello this is a string;"
+char C[20] = "Hello this is a string;"
+char D[20] = "Hello this is a string;"
+char E[20] = "Hello this is a string;"
+char * p;
+int value = 0;
+
+
+int main(void) {
+  memcpy(A, B, 12);
+  memccpy(A, C, '!', 20);
+  memmove(A, D, 20);
+  p = memchr(A, '!', 20);
+  memset(A, '!', 20);
+  value = memcmp(D, E);
+  value = strlen(A);
+  value = strnlen(A, 20);
+
+  strlcpy(A, "hello", 20);
+  strlcat(A, "string", 20);
+
+}
+
+
