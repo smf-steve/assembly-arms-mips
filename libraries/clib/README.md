@@ -30,7 +30,7 @@ The purpose for these implementation include:
 
 ---
 # Reference
-In this section, we provide the declaration for all of the subroutines defined by the various _de facto_ standard.
+In this section, we provide the declaration for all of the subroutines defined by the various _de facto_ standard.  The prototypes are defined, however, using the Rust system.
 
 ## \#include <stdlib.h>
 
@@ -48,18 +48,26 @@ long long atoll(const char *);
 
 ### Memory related subroutines:
 
+This seems redundent and unncessary..
+Just refere the reader to the specifc file that contains the declarations.
+
+For the xxxx.c files, add the C prototypes
+For the xxxx.m files, add all of the .globls uptop....
+
+
+
 ```c
 // memcpy, memccpy, memmove -- move bytes within memory
-byte * memcpy(byte *dst, byte * src, int length);
-byte * memccpy(byte *dst, byte *src, int last_char, int maxlen);
-byte * memmove(byte *dst, byte *src, int length);
+&byte memcpy (byte &dst, byte &src, int length);
+&byte memccpy(byte &dst, byte &src, int char_stop, int maxlen);
+&byte memmove(byte &dst, byte &src, int length);
 
 
 // memchr -- set a byte in memory
-byte * memchr(byte *src, byte c, int max_length);
+byte * memchr(byte *src, byte value, int max_length);
 
 // memset - locate a byte in memory
-byte *memset(byte *dst, byte c, int length);
+byte *memset(byte *dst, byte value, int length);
 
 // memcmp -- compare bytes in memory
 int   memcmp(byt *src1, byte *src2, int length);
@@ -69,46 +77,39 @@ int   memcmp(byt *src1, byte *src2, int length);
 
 ```c
 //      strlen, strnlen – find length of string
-size_t strlen(char *s);
-size_t strnlen(char *s, int maxlen);
+int strlen(char *s);
+int strnlen(char *s, int maxlen);
 
 
 
-//     strcat, strncat – concatenate strings
-char * strcat(char *restrict s1, const char *restrict s2);
-char * strncat(char *restrict s1, const char *restrict s2, size_t len);
+int      strlcpy(char * restrict dst, const char * restrict src, size_t dstsize);
+
+     size_t
+     strlcat(char * restrict dst, const char * restrict src, size_t dstsize);
+
+
+
+
+// strcmp, strncmp – compare strings
+int strcmp(const char *s1, const char *s2);
+int strncmp(const char *s1, const char *s2, size_t n);
+
+
+// strchr, 
+strrchr – locate character in string
+char * strchr(const char *s, int c);
+char * strrchr(const char *s, int c);
+
+// strpbrk – locate multiple characters in string
+char * strpbrk(const char *s1, const char *s2);
 
 //  strstr, strcasestr, strnstr – locate a substring in a string
 char * strstr(const char *s1, const char *s2);
 char * strcasestr(const char *haystack, const char *needle);
 char * strnstr(const char *haystack, const char *needle, size_t len);
 
-// stpcpy, stpncpy, strcpy, strncpy – copy strings
-char * stpcpy(char *dst, const char *src);
-char * stpncpy(char *dst, const char *src, size_t len);
-char * strcpy(char *restrict s1, const char *restrict s2);
-char * strncpy(char *restrict s1, const char *restrict s2, size_t len);
 
-// strspn, strcspn – span a string
-size_t strspn(const char *s1, const char *s2);
-size_t strcspn(const char *s1, const char *s2);
 
-// strchr, strrchr – locate character in string
-char * strchr(const char *s, int c);
-char * strrchr(const char *s, int c);
-
-// strcmp, strncmp – compare strings
-int strcmp(const char *s1, const char *s2);
-int strncmp(const char *s1, const char *s2, size_t n);
-
-//perror, strerror, strerror_r, sys_errlist, sys_nerr – system error messages
-char * strerror(int errnum);
-
-// strsep -- string separator
-// strpbrk – locate multiple characters in string
-char * strsep(char **stringp, const char *delim);
-    //  (obsolete) char * strtok(char *restrict s1, const char *restrict s2);
-char * strpbrk(const char *s1, const char *s2);
 
 ```
 
