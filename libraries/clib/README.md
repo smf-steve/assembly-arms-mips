@@ -1,4 +1,4 @@
-# Standard Library
+# C Standard Library
 
 An ISA defines the OS interface but it does not define a set of useful subroutines in which a programmer can use.  As such the assembly-level program is left to their own devices to develop such subroutines.
 
@@ -26,6 +26,20 @@ The purpose for these implementation include:
 1. to utilize the implementation as a teaching tool,
 1. to provide MIPS/ARM programmers with a set of useful subroutines to build upon.
 
+
+# Directory Structure
+
+In this directory, files are organized as files:
+  1. \<source\>.c: A reference implementation written in C
+  1. \<source\>.mips: The implementation of the associated subroutines in MIPS
+  1. \<source\>.arm: The implementation of the associated subroutines in MIPS
+
+The name of the source files include:
+
+  1. stdlib
+  1. string:
+  1. stdio:
+  1. conversions: formatted output conversion, which are utilized by snprintf
 
 
 ---

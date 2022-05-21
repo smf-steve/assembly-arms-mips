@@ -337,10 +337,10 @@ strlen:     nop                                 # int strlen(byte * str) {
             # a0: str
 
             li $v0, 0,                          #   count = 0;
-t_strlen:   lbu $at, 0($a0)                     #   while (*p != '\0') {
-            beq $at, $zero, d_strlen            #     // branch: ! (*p != '\0')
-              addiu $a0, $a0, 1                 #    p++
-              addiu $v0, $v0, 1                 #    count++
+t_strlen:   lbu $at, 0($a0)                     #   while (*str != '\0') {
+            beq $at, $zero, d_strlen            #     // branch: ! (*str != '\0')
+              addiu $a0, $a0, 1                 #    str++;
+              addiu $v0, $v0, 1                 #    count++;
             b t_strlen                          #   }
 d_strlen:   jr $ra                              #   return count                                            
 .end strlen                                     # }
