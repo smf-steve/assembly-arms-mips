@@ -2,45 +2,45 @@
 #define byte unsigned char
 #define FALSE 0
 #define TRUE 1
+#define byte char
 #include <alloca.h>
 
-void * memcpy(char * dst, char *src, int length) {
-  // Note: NO check is made if the strings overlap
-  //       This is "mem" copy and not "string" copy
+#define C_POINTER_APPROACH
+#undef C_ARRAY_APPROACH
 
-  char * original_dst;
-  int c;
+void * memcpy(byte * dst, byte *src, int length) {
+  // Note: the source and destination may overlap
+  //       Hence, no check is made to determine if they do
 
-  // Written via the pointer approach
-  original_dst = dst;
+  byte c; 
+
+#ifdef C_POINTER_APPROACH //: Written via the pointer approach
+  byte * current = dst;
   for(c=0; c < length; c++) {
-    (* dst) = (* src);
-    dst++; src++;
+    (* current) = (* src);
+    current++; 
+    src++;
   }
-  return original_dst;
+  return dst;
 
-  // Written via the array approach
-  // for(c=0; c < length; c++) {
-  //   dst[c] = src[c];
-  //   if (src[c] == char_last) {
-  //      ret_val = &dst + c;
-  //      break;
-  //   }
-  // }
-  // 
-  // return ret_val;
- }
+#else // C_ARRAY_APPROACH: Written via the array approach
+  for(c=0; c < length; c++) {
+     dst[c] = src[c];
+  }
+  return dst;
 
+#endif
+}
 
 void * memccpy(char * dst, char *src, char char_stop, int length) {
-  // Note: NO checks are made for the NULL character
-  //       This is "mem" copy and not "string" copy
+  // Note: the source and destination may overlap
+  //       Hence, no check is made to determine if they do
 
   // If the "char_stop" is not within the string NULL is returned
   // If the "char_stop" is encountered during the operation
   //   -- the character is copied into dst
+  //   -- the address of the character after "char_stop" is the returned
   //   -- the copy operation then stops 
-  //   -- the address of the character after "char_stop" is returned
   //
   // From the man page:
   //     * If the character c (as converted to an unsigned char) occurs 
@@ -51,33 +51,32 @@ void * memccpy(char * dst, char *src, char char_stop, int length) {
   int c;
   char * ret_val = NULL;
 
-  // Written via the pointer approach
+#ifdef C_POINTER_APPROACH //: Written via the pointer approach
   for(c=0; c < length; c++) {
     (* dst) = (* src);
     if ( (* dst) == char_stop) {
        ret_val = dst + 1; 
        return ret_val;
     }
-    dst++; src++;
+    dst++; 
+    src++;
   }
   return ret_val;  
 
-  // Written via the array approach
-  // for(c=0; c < length; c++) {
-  //   dst[c] = src[c];
-  //   if (src[c] == char_stop) {
-  //      ret_val = &dst + c;
-  //      break;
-  //   }
-  // }
-  // 
-  // return ret_val;
+#else // C_ARRAY_APPROACH: Written via the array approach
+  for(c=0; c<length; c++) {
+    dst[c] = src[c];
+    if (src[c] == char_stop) {
+       ret_val = &( dst[c+1] ); // dst + c+1;
+       break;
+    }
+  }
+  
+  return ret_val;
  }
  
 
 void * memmove(byte * dst, byte *src, int length) {
-  // Returns dst
-
   // Steps:
   //   1. Determine if the strings overlap.
   //   2. If overlap
@@ -95,16 +94,18 @@ void * memmove(byte * dst, byte *src, int length) {
     byte * end;
 
     // first, second = order(dst, src);
-       first  = (dst < src) ? dst : src; // the "min" macro
-       second = (dst < src) ? src : dst; // the "max" macro
+    first  = min(dst, src);  // (dst < src) ? dst : src; // the "min" macro
+    second = max(dst, src);  // (dst < src) ? src : dst; // the "max" macro
     end = first + length;
     overlap = (end >= second);
   }
+
   if ( overlap ) {
     byte * temp;
     temp = alloca(length);
     src  = memcpy(temp, src, length);
   }
+
   dst = memcpy(dst, src, length);
   if ( overlap ) {
      ;  // deallocate stack space
@@ -113,8 +114,6 @@ void * memmove(byte * dst, byte *src, int length) {
 }
 
 
-
-// memchr -- locate a byte in memory
 void * memchr(void *src, unsigned char value, int length) {
   int c;
   void * ret_val = NULL;
@@ -144,30 +143,40 @@ void *memset(void *dst, byte value, int length) {
 }
 
 
-
-
 // memcmp -- compare byte string
 int   memcmp(void *src1, void *src2, int length) {
 
   int c;
   int ret_val = 0;
 
-  // Special Cases:
-  // 1. both strings are are the same -- return 0;
-  // 2. only one string is empty -- return 1 or -1;
-  // 3. search for the first difference
+  // Handling Cases:
+  //   1. both strings are the same (src1 == src2) -- return 0;
+  //   2. only one string is empty -- return 1 or -1;
+  //   3. search for the first difference
 
 
-  if (src1 == src2)  return 0;   // both strings are the same
+  if (src1 == src2)  return 0;
   if (src1 == NULL ) return 1;
   if (src2 == NULL ) return -1;
 
   for(c=0; c < length; c++) {
-    if ( (* (char*)src1) != (* (char*) src2))
+    if ( (* (char*) src1) != (* (char*) src2))
        break;
     src1++; 
     src2++;
   }
+
+  // Alternative approach:
+  // c=0;
+  // while ((* (char*) src1) != (* (char*) src2)) {
+  //   if (c >= length) {
+  //     break;
+  //   }
+  //   src1++; 
+  //   src2++;
+  //   c++;
+  // }
+
   return (* (char*)src1) - (* (char*)src2); 
 }
 
@@ -192,9 +201,7 @@ int strnlen(char * str, int max_length) {
   return count;
 }
 
-
-
-int   strlcpy(char *  dst,  char *  src, int size){
+int strlcpy(char *  dst,  char *  src, int size){
   int count;
 
   if (size == 0) return 0;
