@@ -1,6 +1,17 @@
-# Assembly: Documentation, Libraries, and Comparison of MIPS and ARM ISAs
+# Assembly-ARM and MIPS: Documentation, Libraries, and Comparison
 
+## Description:
+   A repository that contains documentation related to both the ARM and MIPS ISA, along with library that contains the implementation of basic subroutines.
 
+---
+## Status:
+   * Under Initial Development
+
+## Scope:
+   * Current focus is on developing C and MIPS code for the basic routines
+   * These routines are focused on memory and string operations
+
+---
 ## Goals:
    1. To provide a set of basic library-level routines to be used within learning projects.
       * The SPIM and MARS simulator provide support for OS calls, but do not provide a library of standard subroutines (e.g., \<string.h\>) written in MIPS.
@@ -17,10 +28,20 @@
    1. To serve as a vehicle to compare the MIPS and ARM ISA.
 
 
-## Status:
-   * Under Initial Development
+## File structure
+   * documentation/
+     - documents that are either ISAs neutral or compare the two ISAs
+     * arm/
+     * mips/
+   * libraries/
+     * arm/
+       * macros/
+       1. \<subroutine 1\>.s
+       1. \<subroutine 2\>.s
+     * mips/
+       - macros/
+       1. \<subroutine 1\>.s
+       1. \<subroutine 2\>.s
 
-## Scope:
-   * Current focus is on developing C and MIPS code for the basic routines
-   * These routines are focused on memory and string operations
+
 
