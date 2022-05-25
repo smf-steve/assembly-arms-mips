@@ -18,22 +18,26 @@
 #      - push_s_registers
 #      - pop_s_registers
 #
-
-# Operational Description.
-#  On the MIPS ISA, 
-#    - the $sp register holds the address of stored element on top of the stack
-#    - the stack grows downwards in memory
-#    - Push:
-#        1. move the top of the stack up by decrementing $sp by 4 bytes
-#        1. store the register into the top position of the stack
-#    - Pop:
-#        1. load the register from the top position of the stack
-#        1. move the top of the stack down by incrementing $sp by 4 bytes
+# Note on the ARM ISA
+#    The ARM ISA provides a native push and pop instruction of the following form:
+#      - push { $r1, $r2, $r3 }
+#    The macros define here mimic this operation
 #
-#    - Multiple Push/Pop:
-#        1. for a push, the $sp is adjusted by the required space
-#        1. relative address is used to store/load registers to/from the stack
-#        1. for a pop, the $sp is adjusted by the required space
+# Operational Description.
+#    On the MIPS ISA, 
+#      - the $sp register holds the address of stored element on top of the stack
+#      - the stack grows downwards in memory
+#      - Push:
+#          1. move the top of the stack up by decrementing $sp by 4 bytes
+#          1. store the register into the top position of the stack
+#      - Pop:
+#          1. load the register from the top position of the stack
+#          1. move the top of the stack down by incrementing $sp by 4 bytes
+#  
+#      - Multiple Push/Pop:
+#          1. for a push, the $sp is adjusted by the required space
+#          1. relative address is used to store/load registers to/from the stack
+#          1. for a pop, the $sp is adjusted by the required space
 #
 
 ######################
