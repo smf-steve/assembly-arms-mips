@@ -4,3 +4,6 @@ https://www.cs.umd.edu/~meesh/cmsc411/website/handouts/Simple_Operation_of_MIPS.
 https://dannyqiu.me/mips-interpreter/
 http://www.cburch.com/cs/330/reading/mips-ref.pdf
 http://undcemcs01.und.edu/~wen.chen.hu/course/share/370/mips_inst.pdf
+https://mathcs.holycross.edu/~csci226/MIPS/summaryHO.pdf
+https://www.math-cs.gordon.edu/courses/cps311/handouts-2021/index.html
+
