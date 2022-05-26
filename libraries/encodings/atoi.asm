@@ -1,11 +1,22 @@
             .text
-            .include "stack_macros.asm"
+            .include "macros/stack.s"
             .globl atoi
-          
+ 
 atoi:       nop               # int atoi(char * str);
                               #   Converts the initial portion of the string ("str")
                               #   into an integer (i.e., 2's complement)
                               # This subroutine presume that all input values are non-negative
+
+
+
+
+
+
+
+_atou:      nop              # int atou(char * str); 
+                              
+                              
+                              
 
             # v0 : value                  : the numeric value of the string
             # a0 : &str                   : the address of the input string
