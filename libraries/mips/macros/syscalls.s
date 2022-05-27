@@ -1,4 +1,4 @@
-# File: syscall.s
+# File: syscalls.s
 #
 #
 # Description: MARS and SPIM, two assemblers for the MIPS ISA, 
@@ -322,7 +322,7 @@
 .macro exiti(%imm)
       # Terminate the program with the provided value
       # Note that under the MARS GUI, this has no impact.
-      move $a0, %imm
+      li $a0, %imm
       li $v0, 17
       syscall
 .end_macro
