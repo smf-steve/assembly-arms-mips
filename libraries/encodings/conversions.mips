@@ -1,0 +1,36 @@
+
+              .data
+              .eqv base10 10
+u2a_str:      .space 10     # a buffer to hold 2^32-1 (4294967295) in ascii
+u2a_estr:     .byte  '0'    # add one more char
+              .byte  '\0'   # Null Char used to end i2a_str
+
+              .text
+
+# Usage: char * percent_u(int)
+# Description: Converts a 32-bit unsigned value to decimal ascii
+percent_u:     # char * u2a(value) {
+  # v0: p                   
+  # a0: value
+  # t0: base10             
+  # t1: digit
+
+            la $v0, i2a_estr          #  char * p = &if2_estr
+            addu $v0, $v0, 1
+            li $t0, base10
+ 
+  top:      nop                  #  do {
+              div $a0, $t0         #     
+              mfhi $t1             #    digit = value % 10;
+              mflo $a0             #    value = value / 10;
+              addi $t1, $t1, '0'   #    * p = digit + '0';
+              lbu $t1, 0($v0)
+              subi $v0, $v0, 1     #    p--;
+end:        bne $v0, $zero top     #  } while (value != 0 )
+
+            addi $v0, $v0, 1       #  p ++;
+                                   #  return p;
+                                   #}
+
+
+
