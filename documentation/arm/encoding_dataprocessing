@@ -1,0 +1,182 @@
+syntax:
+
+// DataProcessing:
+// DataTransfer: LDR, STR, LDRB, STRB  (B is an option)
+// Branch:  B, BL
+   // B target_address
+//  BX  to do the return
+
+
+// Halfword and Signed DataTransfer:  LDRH/STRH/  LDRSB/LDRSH
+//    (Three encoding)
+     // Halfworddatatransfer,registeroffset cond
+     // Halfword data transfer, immediate offset cond
+     // Signed data transfer (byte/halfword
+
+
+Stmt  ->  [ label: ] instr
+instr ->  mem_op  REG "," address_mode
+instr ->  data_op REG "," shift_op
+
+address_mode ->   "[""  REG "]"                       // degenerate form
+address_mode ->   "[""  REG ","      offset "]"       // pre-without update
+address_mode ->   "[""  REG "]"  "," offset           // post
+address_mode ->   "[""  REG ","      offset "]" "!"   // pre
+
+offset       ->   imm_12
+             ->   +/-  REG
+             ->   +/-  REG ","  SHIFT imm_5
+
+
+shift_op     ->  imm_8
+             ->  +/- REG [ ","  SHIFT imm_5 ]
+             ->  +/- REG [ ","  RXX ]             
+             ->  +/- REG [ ","  SHIFT REG ]
+
+
+
+
+
+
+
+
+
+eleven forms
+
+bit 25 == 1:  Immediate
+bit 25 == 0:  Register with shift
+
+Immediate                           |  11 10 9 8    | 7 6 5 4 3 2 1 0  |
+ #n                                 | rotate_imm    | immediate_8      |
+
+--------------------------------
+bit 4 == 0: shift by Immediate
+
+====
+Register                            | 11 10 9 8 7   | 6 5 | 4 | 3 2 1 0 |
+Rm                                  |  0  0 0 0 0   | 0 0 | 0 | Rm      |
+Rm, LSL #0
+
+Logical Shift Left by Immediate     | 11 10 9 8 7   | 6 5 | 4 | 3 2 1 0 |
+Rm, LSL #imm                        | shift_imm     | 0 0 | 0 | Rm      |
+=====                                 
+
+Logical Shift Right by Immediate    | 11 10 9 8 7   | 6 5 | 4 | 3 2 1 0 | 
+Rm, LSR #imm                        | shift_imm     | 0 1 | 0 | Rm      |
+
+Arithmetic Shift Right by Immediate | 11 10 9 8 7   | 6 5 | 4 | 3 2 1 0 |
+Rm, ASR #imm                        | shift_imm     | 1 0 | 0 | Rm      |
+
+=====
+Rotate Right by Immediate           | 11 10 9 8 7   | 6 5 | 4 | 3 2 1 0 |
+Rm, ASR #imm                        | shift_imm     | 1 1 | 0 | Rm      |
+
+Rotate Right with Extend            | 11 10 9 8 | 7 | 6 5 | 4 | 3 2 1 0 |
+Rm, RXX                             |  z  z z z | z | 1 1 | 0 | Rm      |
+Rm, ASR #0
+=====
+
+---------------------------
+#4 == 1 : shift by Register
+
+Note. the lower  8 bits are used to perfrom the rotate
+      -- but we only need 5 bits.
+      1. do we ignore bits 678
+      1. or do we say it's greater than 32, so the result all goes to zero-- for example
+
+Logical Shift Left by Register      | 11 10 9 8 | 7 | 6 5 | 4 | 3 2 1 0 |
+Rm, LSL Rs                          | Rs        | z | 0 0 | 1 | Rm      |
+
+
+Logical Shift Right by Register     | 11 10 9 8 | 7 | 6 5 | 4 | 3 2 1 0 |
+Rm, LSR Rs                          | Rs        | z | 0 1 | 1 | Rm      |
+
+
+Arithmetic Shift Right by Register  | 11 10 9 8 | 7 | 6 5 | 4 | 3 2 1 0 |
+Rm, ASR Rs                          | Rs        | z | 1 0 | 1 | Rm      |                              
+
+
+Rotate Right by Register            | 11 10 9 8 | 7 | 6 5 | 4 | 3 2 1 0 |
+Rm, ROR Rs                          | Rs        | z | 1 1 | 1 | Rm      |
+
+
+======================================================================
+Addressing Modes: 9 options
+#imm_12 : signed 12 bit encoding
+#imm_5  : unsigned 5 bit encoding
+<shift> : LSL, LSR, ASR, ROR, RRX
+
+! pre-index... perform the operation with 
+   1. Rn = ....
+   2. MEM[Rn] = Rd   (for Load  instructions)
+   (  Rd = MEM[Rn]   (for Store instructions) )
+
+, post-index.. perform the operation
+   1. MEM[Rn] = Rd
+   2. Rn = ...
+
+
+A. ? Psuedo Instruction
+   LDR Rd, =label
+   LDR Rd, =0x445233
+     ==>  MOV Rd, #n
+          MVN Rd, ~ #n  
+     othwise:
+
+     ==> label_blah:     .word  #N
+             LDR Rd, [ R15, #-4]
+
+        Here I assume that I can put a data into the text segment
+
+
+B. ?
+   LDR Rd, [ Rn ]   
+   LDR Rd, [ Rn, #0 ]
+   LDR Rd, [ Rn, #0 ] !
+   LDR Rd, [ Rn ] , #0
+
+Note:
+LDRSB, LDRH, LDRSH, STRH instructions. 
+   Can't use shifted register offset	
+
+
+Three Modes: Offset, PreIndex, PostIndex
+=== Offset
+
+1. Base register with immediate offset  ( LDRSB, LDRH, LDRSH, STRH instructions. )
+   LDR  Rd, [ Rn, #imm_12 ]
+
+2. Base register with register offset   ( LDRSB, LDRH, LDRSH, STRH instructions. )
+   LDR Rd, [ Rn, +/- Rm ]
+
+3. Base register with shifted register offset
+   LDR Rd, [ Rn, +/- Rm, <shift> #imm_5 ]
+
+==== Pre-Index
+
+4. Base register with immediate offset, pre-indexed  (LDRSB, LDRH, LDRSH, STRH instructions. ) {LD}/{ST}R {SB, H, SH, })
+   (1. with the ! operator)
+
+   LDR Rd, [ Rn, #imm_12 ] !
+
+5. Base register with register offset, pre-indexed  ( LDRSB, LDRH, LDRSH, STRH instructions. )
+   (2. with the ! operator)
+
+   LDR Rd, [Rn, +/- Rm ] !
+
+6. Base register with shifted register offset, pre-indexed
+   (3. with the ! operator)
+
+   LDR Rd, [ Rn, +/- Rm, <shift> #imm_5 ] !
+
+==== Post-Index
+
+7. Base register with immediate offset, post-indexed  ( LDRSB, LDRH, LDRSH, STRH instructions. )
+  
+   LDR Rd, [ Rn ] , #imm_12
+
+8. Base register with register offset, post-indexed  ( LDRSB, LDRH, LDRSH, STRH instructions. )
+   LDR R,  [ Rn ] , +/- Rm 
+
+9. Base register with shifted register offset, post-indexed
+   LDR R,  [ Rn ] , +/- Rm,  <shift> #imm_5 
