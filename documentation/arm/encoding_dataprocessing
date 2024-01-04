@@ -180,3 +180,14 @@ Three Modes: Offset, PreIndex, PostIndex
 
 9. Base register with shifted register offset, post-indexed
    LDR R,  [ Rn ] , +/- Rm,  <shift> #imm_5 
+
+
+
+multiply
+
+MUL  r0, r2, r3  ;  r0 = r2 * r3   
+   32 -bits
+
+MUL Long
+ [U|S]MULL r4, r5, r2, r3 ; r5:r4 = r2 * r3
+
